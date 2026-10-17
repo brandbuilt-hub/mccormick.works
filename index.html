@@ -6,7 +6,7 @@
 <title>McCormick, Independent Practice</title>
 <meta name="description" content="Gregory McCormick, independent practice. On working together.">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#E2D7BF">
+<meta name="theme-color" content="#EFE8DA">
 <link rel="canonical" href="https://mccormick.works/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mccormick.works/">
@@ -18,278 +18,383 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The McCormick letterhead on an ivory letter">
 <meta name="twitter:card" content="summary_large_image">
-<script>
-  // the letter shows open by default; with script and motion allowed it starts folded and opens
-  document.documentElement.classList.add('js');
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('folded');
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Barlow (OFL) stands in for DIN Alternate where it is not installed; Courier Prime (OFL) for Courier New. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#28212A; --blue:#CEDCE3; --ivory:#F4F0E6; --paper:#F6F2E9; --desk:#E2D7BF; --buff:#CBB78F; --red:#8C3F49;
-    --ink-2:rgba(40,33,42,.72); --rule:rgba(40,33,42,.85); --hair:rgba(40,33,42,.28);
+    --ink:#28212A; --ivory:#F4F0E6; --paper:#F7F3EA; --ground:#EFE8DA;
+    --orange:#F26A3D; --orange-2:#F68A63; --lemon:#F4D24B; --lilac:#C49BF5; --plum:#4A2370;
+    --peri:#CFDCFA; --navy:#1E3F73; --rose:#9E5B5B; --chalk:#F6F2EC;
+    --wire:rgba(40,33,42,.5);
     --din:'DIN Alternate','Barlow',Helvetica,Arial,sans-serif;
-    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
     --mono:'Courier Prime','Courier New',Courier,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{background:var(--desk)}
-  body{
-    background:var(--desk);color:var(--ink);font-family:var(--sans);
-    -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100svh;
-    display:flex;flex-direction:column;overflow-x:hidden;position:relative;
-  }
-  /* a Riviera afternoon, out of focus: the sheet is the only sharp thing */
-  /* hard side light across the desk */
-  body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
-    background:
-      repeating-linear-gradient(118deg, transparent 0 140px, rgba(80,62,40,.045) 140px 230px, transparent 230px 420px),
-      radial-gradient(120% 90% at 0% 0%, rgba(255,250,236,.65), transparent 60%);
-    filter:blur(10px)}
+  html,body{background:var(--ground)}
+  body{color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
   ::selection{background:var(--ink);color:var(--ivory)}
   a{color:inherit}
 
-  .label{font-family:var(--din);font-weight:600;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase}
+  /* one board, measured in viewport widths so the composition holds its shape */
+  .board{position:relative;width:100%;height:var(--h,100vw)}
+  .b{position:absolute;overflow:hidden}
+  .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
+  /* the work, drawn as sheets of one object that part and close */
+  .tile{left:0;top:0;width:54vw;height:30vw;background:var(--orange)}
+  .tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
-  main{position:relative;z-index:1;flex:1;display:grid;place-items:center;
-    padding:clamp(40px,8vh,96px) 16px clamp(56px,10vh,120px);perspective:2200px}
+  /* a machine, read back as characters */
+  .mist{left:54vw;top:0;width:26vw;height:42vw;
+    background:
+      radial-gradient(60% 40% at 55% 20%,#97A6EC 0%,transparent 70%),
+      radial-gradient(75% 45% at 40% 60%,#F39AD6 0%,transparent 72%),
+      radial-gradient(90% 50% at 60% 102%,#F7A27C 0%,transparent 75%),
+      #C9B8EE}
+  .mist canvas,.pix canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
-  .stage{position:relative;width:min(800px,100%)}
-  .tilt{transform-style:preserve-3d;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  .field{left:80vw;top:0;width:20vw;height:24vw;background:var(--chalk)}
+  .field img{position:absolute;width:150%;left:-8%;top:-18%;display:block;mix-blend-mode:multiply}
 
-  /* the sheet: one letter, typeset once, shown through three equal panels */
-  .memo{display:grid;grid-template-rows:repeat(3,var(--third,240px));transform-style:preserve-3d;position:relative}
-  .third{position:relative;transform-style:preserve-3d}
-  .face{position:relative;height:100%;background:var(--paper);
-    -webkit-backface-visibility:hidden;backface-visibility:hidden;
-    overflow:hidden;overflow:clip}
-  .face::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Ccircle cx='84.2' cy='39.2' r='0.55' fill='#28212A' opacity='0.14'/%3E%3Ccircle cx='15.1' cy='131.9' r='0.48' fill='#28212A' opacity='0.14'/%3E%3Ccircle cx='143.3' cy='15.4' r='0.70' fill='#28212A' opacity='0.15'/%3E%3Ccircle cx='246.4' cy='150.0' r='0.66' fill='#B08A5A' opacity='0.13'/%3E%3Ccircle cx='34.6' cy='109.0' r='0.80' fill='#28212A' opacity='0.15'/%3E%3Ccircle cx='47.0' cy='151.2' r='0.38' fill='#8C6A4A' opacity='0.22'/%3E%3Ccircle cx='15.5' cy='53.5' r='0.67' fill='#28212A' opacity='0.24'/%3E%3Ccircle cx='117.8' cy='77.9' r='0.67' fill='#8C6A4A' opacity='0.32'/%3E%3Cpath d='M136.6 227.5Q136.9 227.2 134.3 228.8' stroke='#B08A5A' stroke-width='.5' fill='none' opacity='0.20'/%3E%3Cpath d='M196.9 39.5Q197.2 38.1 194.6 38.7' stroke='#B08A5A' stroke-width='.5' fill='none' opacity='0.24'/%3E%3Ccircle cx='205.2' cy='212.8' r='0.67' fill='#2F5E8C' opacity='0.31'/%3E%3Cpath d='M118.6 218.4Q119.8 216.3 117.9 216.2' stroke='#2F5E8C' stroke-width='.5' fill='none' opacity='0.25'/%3E%3Ccircle cx='168.3' cy='258.2' r='0.72' fill='#B08A5A' opacity='0.20'/%3E%3Ccircle cx='5.9' cy='120.0' r='0.47' fill='#8C6A4A' opacity='0.29'/%3E%3Cpath d='M74.7 192.0Q75.1 191.4 72.5 192.7' stroke='#B08A5A' stroke-width='.5' fill='none' opacity='0.23'/%3E%3Ccircle cx='142.9' cy='229.7' r='0.58' fill='#B08A5A' opacity='0.36'/%3E%3Ccircle cx='93.3' cy='229.9' r='0.48' fill='#8C6A4A' opacity='0.16'/%3E%3Ccircle cx='60.7' cy='126.1' r='0.43' fill='#28212A' opacity='0.17'/%3E%3Cpath d='M139.0 158.6Q138.8 156.0 135.6 155.5' stroke='#2F5E8C' stroke-width='.5' fill='none' opacity='0.39'/%3E%3Ccircle cx='175.8' cy='14.0' r='0.41' fill='#28212A' opacity='0.23'/%3E%3Ccircle cx='164.9' cy='16.2' r='0.41' fill='#28212A' opacity='0.40'/%3E%3Ccircle cx='156.2' cy='26.6' r='0.55' fill='#28212A' opacity='0.16'/%3E%3Cpath d='M6.6 227.3Q5.4 224.3 1.2 223.3' stroke='#28212A' stroke-width='.5' fill='none' opacity='0.23'/%3E%3Ccircle cx='123.3' cy='30.0' r='0.62' fill='#B08A5A' opacity='0.40'/%3E%3Ccircle cx='22.3' cy='26.6' r='0.73' fill='#2F5E8C' opacity='0.33'/%3E%3Cpath d='M134.2 53.4Q135.9 49.1 134.6 46.8' stroke='#28212A' stroke-width='.5' fill='none' opacity='0.22'/%3E%3Ccircle cx='77.5' cy='167.2' r='0.55' fill='#28212A' opacity='0.31'/%3E%3Ccircle cx='43.4' cy='200.7' r='0.70' fill='#28212A' opacity='0.27'/%3E%3Cpath d='M159.4 205.0Q161.4 206.8 160.3 210.6' stroke='#8C6A4A' stroke-width='.5' fill='none' opacity='0.35'/%3E%3Cpath d='M134.6 92.4Q136.8 93.5 136.1 96.5' stroke='#28212A' stroke-width='.5' fill='none' opacity='0.40'/%3E%3Ccircle cx='157.3' cy='89.5' r='0.47' fill='#2F5E8C' opacity='0.39'/%3E%3Cpath d='M59.0 51.1Q63.0 50.2 64.0 51.2' stroke='#8C6A4A' stroke-width='.5' fill='none' opacity='0.26'/%3E%3Ccircle cx='236.4' cy='89.4' r='0.56' fill='#28212A' opacity='0.35'/%3E%3Cpath d='M185.0 51.8Q187.6 50.4 187.3 51.0' stroke='#8C6A4A' stroke-width='.5' fill='none' opacity='0.24'/%3E%3Ccircle cx='187.7' cy='120.4' r='0.42' fill='#28212A' opacity='0.32'/%3E%3Ccircle cx='39.3' cy='235.3' r='0.61' fill='#8C6A4A' opacity='0.29'/%3E%3Ccircle cx='243.7' cy='40.5' r='0.88' fill='#28212A' opacity='0.16'/%3E%3Cpath d='M168.9 136.9Q171.2 138.9 170.4 142.9' stroke='#8C6A4A' stroke-width='.5' fill='none' opacity='0.24'/%3E%3Ccircle cx='65.5' cy='76.2' r='0.65' fill='#8C6A4A' opacity='0.33'/%3E%3Cpath d='M216.9 15.8Q215.4 14.5 210.8 15.2' stroke='#2F5E8C' stroke-width='.5' fill='none' opacity='0.37'/%3E%3Ccircle cx='215.1' cy='228.3' r='0.36' fill='#8C6A4A' opacity='0.27'/%3E%3Ccircle cx='114.4' cy='47.6' r='0.43' fill='#28212A' opacity='0.34'/%3E%3Ccircle cx='161.0' cy='31.3' r='0.66' fill='#28212A' opacity='0.21'/%3E%3Ccircle cx='203.9' cy='27.6' r='0.37' fill='#28212A' opacity='0.14'/%3E%3Cpath d='M25.4 117.6Q25.3 115.2 22.2 114.8' stroke='#28212A' stroke-width='.5' fill='none' opacity='0.33'/%3E%3Ccircle cx='131.4' cy='133.2' r='0.61' fill='#2F5E8C' opacity='0.25'/%3E%3C/svg%3E")}
-  .face::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  .vert{left:80vw;top:24vw;width:20vw;height:50vw;background:var(--peri)}
+  .vert img{position:absolute;left:50%;top:50%;width:60vw;height:auto;transform:translate(-50%,-50%) rotate(-90deg)}
+
+  .navy{left:0;top:58vw;width:9vw;height:24vw;background:var(--navy)}
+
+  .schem{left:54vw;top:42vw;width:26vw;height:24vw;background:var(--lilac)}
+  .schem img{position:absolute;width:150%;left:-10%;top:4%;display:block;mix-blend-mode:multiply;opacity:.85}
+
+  .pix{left:54vw;top:66vw;width:26vw;height:28vw}
+  .sun{left:82vw;top:76vw;width:18vw;height:20vw;background:var(--lemon)}
+
+  .dot{position:absolute;z-index:4;width:2.3vw;height:2.3vw;border-radius:50%;background:var(--orange)}
+
+  .wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+  .wires path{fill:none;stroke:var(--wire);stroke-width:1.25}
+  .wires .end{fill:var(--wire)}
+
+  /* the letter, typed on its own sheet */
+  .letter{position:absolute;left:6vw;top:21vw;width:48vw;z-index:3;background:var(--paper);
+    padding:4.4vw 5vw 4.6vw}
+  .letter::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35  0 0 0 0 .4  0 0 0 0 .45  0 0 0 .10 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-  .back{position:absolute;inset:0;background:#F1ECE1;transform:translateZ(-1px) rotateX(180deg);
-    -webkit-backface-visibility:hidden;backface-visibility:hidden}
-  .shade{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0}
-  .t1 .shade{background:linear-gradient(to top,rgba(60,45,30,.10),rgba(60,45,30,0) 60%)}
-  .t3 .shade{background:linear-gradient(to bottom,rgba(60,45,30,.10),rgba(60,45,30,0) 60%)}
-
-  /* creases stay in the paper after it opens */
-  .face{box-shadow:0 1px 1px rgba(40,33,42,.08)}
-  .t2 .face{box-shadow:inset 0 1px 0 rgba(40,33,42,.10),inset 0 2px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(40,33,42,.12),inset 0 -2px 1px rgba(255,255,255,.5)}
-
-  .t1{transform-origin:50% 100%;transform:rotateX(-3.2deg)}
-  .t3{transform-origin:50% 0%;transform:rotateX(2.6deg)}
-  .tone{position:absolute;inset:0;pointer-events:none;z-index:2}
-  .t1 .tone{background:linear-gradient(to bottom,rgba(255,252,244,.22),rgba(255,252,244,0) 55%,rgba(60,45,30,.05) 92%,rgba(60,45,30,.10))}
-  .t2 .tone{background:linear-gradient(to bottom,rgba(60,45,30,.05),rgba(60,45,30,0) 8%,rgba(60,45,30,0) 90%,rgba(60,45,30,.045))}
-  .t3 .tone{background:linear-gradient(to bottom,rgba(255,255,255,.35),rgba(255,255,255,0) 6%,rgba(60,45,30,.025) 60%,rgba(60,45,30,.06))}
-  .folded .t1{transform:translateZ(2px) rotateX(-179.5deg)}
-  .folded .t3{transform:translateZ(1px) rotateX(179.5deg)}
-  .folded .t1 .shade,.folded .t3 .shade{opacity:1}
-  .folded .t1 .face,.folded .t3 .face{opacity:0}
-  html:not(.folded) .back{display:none}
-  .gl{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity .6s;
-    background:radial-gradient(70% 55% at var(--sx,30%) var(--sy,20%),rgba(255,255,255,.32),transparent 70%)}
-  .open .gl{opacity:1}
-  .face > :not(.gl){position:relative;z-index:1}
-  .face > .sheet{position:absolute;left:0;right:0;top:0;min-height:var(--page,0);padding:52px clamp(22px,8%,64px) 64px}
-  .t2 .sheet{top:calc(var(--third,240px) * -1)}
-  .t3 .sheet{top:calc(var(--third,240px) * -2)}
-
-  /* without script: one plain open sheet */
-  html:not(.js) .memo{display:block}
-  html:not(.js) .t1,html:not(.js) .t2{display:none}
-  html:not(.js) .t3{transform:none}
-  html:not(.js) .t3 .face{height:auto}
-  html:not(.js) .t3 .sheet{position:relative;top:0}
-
-  /* letterhead */
-  .mast{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;column-gap:16px}
-  .head{display:flex;flex-direction:column;align-items:center}
-  .mark{width:clamp(170px,40vw,232px)}
+  .mark{width:clamp(150px,15vw,230px)}
   .mark img{width:100%;height:auto;display:block}
-  .practice{text-align:center;margin-top:12px;font-family:var(--din);font-weight:500;font-size:.62rem;letter-spacing:.26em;padding-left:.26em;text-transform:uppercase}
-
-  /* the typed letter: one indented column, every line on the same margin */
-  .type{font-family:var(--mono);font-size:.95rem;line-height:1.62;color:var(--ink)}
-  .col{margin-left:22%;max-width:52ch}
-  .date{margin-top:30px}
-  .salute{margin-top:30px;font:inherit}
-  .type p{font-size:inherit;line-height:inherit;max-width:none}
-  .type p + p,.salute + p{margin-top:1.05em}
-
+  .practice{margin-top:10px;font-family:var(--din);font-weight:500;font-size:.62rem;letter-spacing:.26em;text-transform:uppercase}
+  .type{font-family:var(--mono);font-size:clamp(.84rem,1.02vw,1rem);line-height:1.62;margin-top:2.6vw;max-width:54ch}
+  .salute{margin-top:1.6em;font:inherit}
+  .type p{margin-top:1.05em}
   .sign{margin-top:18px}
-  .sign .ink{width:min(168px,48%);margin-left:-6px}
+  .sign .ink{width:min(160px,44%);margin-left:-6px}
+  .sign .ink img{width:100%;height:auto;display:block}
   .js .sign .ink{clip-path:inset(-10% 100% -10% 0)}
   .js.signed .sign .ink{clip-path:inset(-10% 0 -10% 0);transition:clip-path 1.6s cubic-bezier(.45,.05,.3,1)}
-  .sign .ink img{width:100%;height:auto;display:block}
   .typed-name{margin-top:2px}
-  .contact{display:inline;background:none;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
-  .contact:hover{text-decoration-color:transparent}
-  .mail{text-decoration:none;
-    background-image:linear-gradient(var(--ink),var(--ink));background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
+  .mail{text-decoration:none;background-image:linear-gradient(var(--ink),var(--ink));background-size:100% 1px;background-position:0 100%;background-repeat:no-repeat;
     padding-bottom:1px;transition:background-size .35s cubic-bezier(.16,1,.3,1)}
   .mail:hover{background-size:0 1px;background-position:100% 100%}
-  .mail:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+  .mail:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
 
-
-  @media (max-width:560px){
-    .face > .sheet{padding:30px 20px 40px}
-    .mast{grid-template-columns:1fr;row-gap:14px}
-    .mast > div:first-child{display:none}
-    .head{justify-self:center}
-    .col{margin-left:0}
-    .date{margin-top:24px}
-    .type{font-size:.9rem}
+  /* small screens: the plates stack around the letter */
+  @media (max-width:900px){
+    .board{height:auto;display:grid;grid-template-columns:repeat(6,1fr)}
+    .b,.letter{position:relative;left:auto;top:auto;width:auto;height:auto}
+    .wires,.dot,.navy,.field{display:none}
+    .tile{grid-column:1/-1;height:64vw;order:1}
+    .letter{order:2}.mist{order:3}.schem{order:4}.vert{order:5}.pix{order:6}.sun{order:7}
+    .letter{grid-column:1/-1;margin:-14vw 16px 0;padding:30px 22px 34px}
+    .mist{grid-column:1/4;height:78vw;margin-top:16px}
+    .schem{grid-column:4/-1;height:78vw;margin-top:16px}
+    .vert{grid-column:1/3;height:66vw}
+    .vert img{width:80vw}
+    .pix{grid-column:3/6;height:66vw}
+    .sun{grid-column:6/-1;height:66vw}
   }
-  @media (prefers-reduced-motion:reduce){
-    .third,.shade,.tilt,.sign .ink{transition:none!important}
-    .sign .ink{clip-path:none!important}
-  }
-
-  /* printed, it is one letter-size sheet */
-  @media print{
-    @page{size:letter;margin:0}
-    html,body{background:#fff}
-    body::before,.face::before,.face::after,.tone,.gl,.shade,.back,.t1,.t2{display:none!important}
-    main{display:block;padding:0;perspective:none}
-    .stage{width:auto}
-    .tilt,.t3{transform:none!important}
-    .memo{display:block}
-    .t3 .face{height:auto;overflow:visible;box-shadow:none;background:#fff;opacity:1!important}
-    .t3 .sheet{position:relative;top:0;min-height:0;padding:.7in .9in}
-    .sign .ink{clip-path:none!important}
-    .mail{background:none}
-  }
+  @media (prefers-reduced-motion:reduce){ .sign .ink{clip-path:none!important;transition:none!important} }
 </style>
+<script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
+  <main class="board" id="board">
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="b tile grain" aria-hidden="true"><canvas id="made"></canvas></div>
+    <div class="b mist grain" aria-hidden="true"><canvas id="ascii"></canvas></div>
+    <div class="b field" aria-hidden="true"><img src="assets/plates/field.png" alt=""></div>
+    <div class="b vert" aria-hidden="true"><img src="assets/signature.png" alt=""></div>
+    <div class="b navy" aria-hidden="true"></div>
+    <div class="b schem" aria-hidden="true"><img src="assets/plates/flyer.png" alt=""></div>
+    <div class="b pix" aria-hidden="true" data-wire><canvas id="pix"></canvas></div>
+    <div class="b sun" aria-hidden="true" data-wire></div>
+    <span class="dot" style="left:52.8vw;top:19.6vw" aria-hidden="true"></span>
+    <span class="dot" style="left:78.8vw;top:64.8vw;background:var(--lemon)" aria-hidden="true"></span>
+    <span class="dot" style="left:7.9vw;top:80.6vw;background:var(--lilac)" aria-hidden="true"></span>
 
-  <main>
-    <div class="stage" id="stage">
-      <div class="tilt" id="tilt">
-        <article class="memo" id="memo" aria-label="Letter">
-          <section class="third t1">
-            <div class="face"><div class="gl" aria-hidden="true"></div><div class="tone" aria-hidden="true"></div></div>
-            <div class="back" aria-hidden="true"></div>
-            <div class="shade" aria-hidden="true"></div>
-          </section>
-
-          <section class="third t2">
-            <div class="face"><div class="gl" aria-hidden="true"></div><div class="tone" aria-hidden="true"></div></div>
-          </section>
-
-          <section class="third t3">
-            <div class="face"><div class="gl" aria-hidden="true"></div><div class="tone" aria-hidden="true"></div>
-              <div class="sheet">
-                <header class="mast">
-                  <div></div>
-                  <div class="head">
-                    <div class="mark"><img src="assets/signature.png" alt="McCormick" width="900" height="288"></div>
-                    <div class="practice">Independent Practice</div>
-                  </div>
-                  <div></div>
-                </header>
-                <div class="type">
-                  <div class="col">
-                    <div class="date" id="date">October 2026</div>
-                    <h1 class="salute">On working together.</h1>
-                    <p>Start by telling me what you’re trying to do with the business.</p>
-                    <p>From there I look at it from a few sides. What your customers truly see in it. What you’ve been building toward. And the ideas you keep coming back to but haven’t done anything with yet.</p>
-                    <p>Usually that shows what needs to happen next. I help you decide it, then I build it. Sometimes that’s how you talk about the company. Sometimes it’s the identity, the brand, or the website. Sometimes it’s the product itself.</p>
-                    <p>AI is part of how I work every day. So I can tell you where it would help your business, and where it’s just needless complication.</p>
-                    <p>Tell me what you’ve been thinking about. That’s enough to begin.</p>
-                    <div class="sign"><div class="ink"><img src="assets/signature-gmcc-pen.png" alt="Signed, G McC" width="859" height="405"></div></div>
-                    <div class="typed-name">Gregory McCormick.</div>
-                    <a class="contact mail" href="mailto:gregory@mccormick.works?subject=Working%20together">gregory@mccormick.works</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="back" aria-hidden="true"></div>
-            <div class="shade" aria-hidden="true"></div>
-          </section>
-        </article>
+    <article class="letter" id="letter" aria-label="Letter">
+      <div class="mark"><img src="assets/signature.png" alt="McCormick" width="900" height="288"></div>
+      <div class="practice">Independent Practice</div>
+      <div class="type">
+        <div class="date" id="date">October 2026</div>
+        <h1 class="salute">On working together.</h1>
+        <p>Tell me what you’re trying to do with the business.</p>
+        <p>I’ll look at it three ways. What your customers actually see. What you’ve been building toward. The ideas you keep coming back to but haven’t acted on.</p>
+        <p>My work reaches from figuring out how to explain the company to designing its identity, building its website, and working on the product itself. I help choose what needs attention and take responsibility for getting it made, including working with the people you already have.</p>
+        <p>AI is part of my daily work. I can also help you figure out where it would be useful in yours and get it working.</p>
+        <p>Sometimes there’s a particular project to carry through. Sometimes I stay involved as the business develops. Either way, you’ll be working directly with me.</p>
+        <p>Tell me about the idea you keep coming back to. That’s enough to begin.</p>
+        <div class="sign"><div class="ink"><img src="assets/signature-gmcc-pen.png" alt="Signed, G McC" width="859" height="405"></div></div>
+        <div class="typed-name">Gregory McCormick.</div>
+        <a class="mail" href="mailto:gregory@mccormick.works?subject=Working%20together">gregory@mccormick.works</a>
       </div>
-    </div>
+    </article>
   </main>
-
 
 <script>
 (() => {
   const root = document.documentElement;
-  const memo = document.getElementById('memo');
-  const tilt = document.getElementById('tilt');
-  const stage = document.getElementById('stage');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const board = document.getElementById('board'), letter = document.getElementById('letter');
 
-  // the letter is dated the day it is read
   const d = new Date();
   document.getElementById('date').textContent =
     d.toLocaleString('en-US', { month: 'long' }) + ' ' + d.getDate() + ', ' + d.getFullYear();
+  setTimeout(() => root.classList.add('signed'), reduce ? 0 : 700);
 
-  // The letter is typeset once (in the bottom panel, where its link is live).
-  // The top and middle panels show copies of the same sheet, offset by a third, so lines run across the folds.
-  const sheet = memo.querySelector('.t3 .sheet');
-  ['.t1', '.t2'].forEach(sel => {
-    const copy = sheet.cloneNode(true);
-    copy.setAttribute('aria-hidden', 'true');
-    copy.inert = true;
-    copy.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-    copy.querySelectorAll('h1').forEach(h => { const div = document.createElement('div'); div.className = h.className; div.textContent = h.textContent; h.replaceWith(div); });
-    memo.querySelector(sel + ' .face').appendChild(copy);
+  // the board is as tall as the letter needs
+  const fit = () => {
+    if (matchMedia('(max-width:900px)').matches) { board.style.removeProperty('--h'); return; }
+    const vw = innerWidth / 100;
+    board.style.setProperty('--h', Math.max(98 * vw, letter.offsetTop + letter.offsetHeight + 8 * vw) + 'px');
+  };
+
+  // load an image and read its ink as a grid of densities
+  const sample = (src, cols, rows, fill) => new Promise(res => {
+    const im = new Image(); im.src = src;
+    im.onload = () => {
+      const c = document.createElement('canvas'); c.width = cols; c.height = rows;
+      const x = c.getContext('2d'), s = Math.min(cols / im.width, rows / im.height) * fill;
+      const w = im.width * s, h = im.height * s;
+      x.drawImage(im, (cols - w) / 2, (rows - h) / 2, w, h);
+      const a = x.getImageData(0, 0, cols, rows).data, out = new Float32Array(cols * rows);
+      for (let i = 0; i < out.length; i++) out[i] = a[i * 4 + 3] / 255;
+      res(out);
+    };
   });
-  const size = () => {
-    memo.style.setProperty('--page', Math.round(memo.offsetWidth * 11 / 8.5) + 'px');   // a US letter
-    memo.style.setProperty('--third', Math.ceil(sheet.offsetHeight / 3) + 'px');
-  };
-  size();
-  if ('ResizeObserver' in window) new ResizeObserver(size).observe(sheet);
-  if (document.fonts) document.fonts.ready.then(size);
-
-
-  const DUR = 1250;
-  const unfold = (third, from, z, delay, rest) => {
-    const opts = { duration: DUR, delay, fill: 'forwards' };
-    // two halves so the faces can swap exactly at the edge-on moment (WebKit ignores backface-visibility here)
-    third.animate([
-      { transform: `translateZ(${z}px) rotateX(${from}deg)`, easing: 'cubic-bezier(.5,0,.9,.5)' },
-      { transform: `translateZ(${z}px) rotateX(${from / 2}deg)`, offset: .5, easing: 'cubic-bezier(.1,.5,.4,1)' },
-      { transform: `translateZ(0) rotateX(${rest}deg)` }
-    ], opts);
-    third.querySelector('.face').animate([{ opacity: 0 }, { opacity: 0, offset: .5 }, { opacity: 1, offset: .5001 }, { opacity: 1 }], opts);
-    third.querySelector('.back').animate([{ opacity: 1 }, { opacity: 1, offset: .5 }, { opacity: 0, offset: .5001 }, { opacity: 0 }], opts);
-    third.querySelector('.shade').animate([{ opacity: 1 }, { opacity: .6, offset: .5 }, { opacity: 0 }], opts);
-  };
-  const open = () => {
-    unfold(memo.querySelector('.t1'), -179.5, 2, 0, -3.2);
-    unfold(memo.querySelector('.t3'), 179.5, 1, 550, 2.6);
-    setTimeout(() => root.classList.remove('folded'), DUR + 600);
-    setTimeout(() => stage.classList.add('open'), DUR + 650);
-    setTimeout(() => root.classList.add('signed'), DUR + 950);
+  const setup = cv => {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return [x, r.width, r.height];
   };
 
-  if (reduce) { root.classList.remove('folded'); stage.classList.add('open'); root.classList.add('signed'); }
-  else {
-    // open once the type has loaded, but never keep the reader waiting on it
-    const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
-    Promise.race([fonts, new Promise(r => setTimeout(r, 500))]).then(() => setTimeout(open, 150));
-  }
+  // Edison's phonograph, resolved out of characters; the pointer stirs them
+  let gen = 0;
+  const RAMP = ' .·:-=+o*O0#';
+  const ascii = async () => {
+    const my = ++gen; const cv = document.getElementById('ascii'); const [x, W, H] = setup(cv);
+    const cw = 7.2, ch = 11, cols = Math.floor(W / cw), rows = Math.floor(H / ch);
+    const dens = await sample('assets/plates/phono-mass.png', cols, rows, .9);
+    const target = Array.from(dens, v => RAMP[Math.min(RAMP.length - 1, Math.round(Math.pow(v, .7) * (RAMP.length - 1)))]);
+    const born = Array.from(dens, (v, i) => (i / cols | 0) * 22 + Math.random() * 500);
+    let t0 = performance.now(), px = -999, py = -999, visible = true;
+    cv.parentElement.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); px = e.clientX - r.left; py = e.clientY - r.top; });
+    cv.parentElement.addEventListener('pointerleave', () => { px = py = -999; });
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(cv);
+    x.font = '10px "Courier Prime", monospace'; x.textBaseline = 'top';
+    const draw = now => {
+      const t = now - t0; x.clearRect(0, 0, W, H);
+      for (let i = 0; i < target.length; i++) {
+        let c = target[i]; if (c === ' ') continue;
+        const cx = (i % cols) * cw, cy = (i / cols | 0) * ch;
+        const near = Math.hypot(cx - px, cy - py) < 46;
+        if (!reduce && (t < born[i] || near || Math.random() < .002)) c = RAMP[1 + (Math.random() * (RAMP.length - 1) | 0)];
+        if (!reduce && t < born[i] - 250) continue;
+        x.fillStyle = near ? 'rgba(40,33,42,.75)' : 'rgba(255,255,255,.9)';
+        x.fillText(c, cx, cy);
+      }
+    };
+    if (reduce) return draw(1e9);
+    let last = 0;
+    const loop = now => { if (my !== gen) return; if (visible && now - last > 60) { draw(now); last = now; } requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  };
 
-  // the sheet answers the hand, slightly
-  if (!reduce) {
-    addEventListener('pointermove', e => {
-      if (e.pointerType !== 'mouse' || !stage.classList.contains('open')) return;
-      const x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
-      tilt.style.transform = `rotateY(${x * 5}deg) rotateX(${-y * 4}deg)`;
-      tilt.style.setProperty('--sx', (50 + x * 80) + '%');
-      tilt.style.setProperty('--sy', (40 + y * 70) + '%');
+  // Maxwell's field, set in square pixels
+  const pix = async () => {
+    const cv = document.getElementById('pix'); const [x, W, H] = setup(cv);
+    const step = Math.max(9, Math.round(W / 30)), cols = Math.floor(W / step), rows = Math.floor(H / step);
+    const dens = await sample('assets/plates/field-mass.png', cols, rows, .92);
+    const cells = [];
+    dens.forEach((v, i) => { if (v > .5 && Math.random() > .07) cells.push(i); });
+    cells.sort(() => Math.random() - .5);
+    const sq = step * .72, off = (step - sq) / 2;
+    const paint = n => {
+      for (let k = 0; k < n; k++) {
+        const i = cells[k], cx = (i % cols) * step, cy = (i / cols | 0) * step;
+        if (k % 53 === 5) { x.fillStyle = '#F26A3D'; x.beginPath(); x.arc(cx + step / 2, cy + step / 2, step * .52, 0, 7); x.fill(); }
+        else { x.fillStyle = '#9E5B5B'; x.fillRect(cx + off, cy + off, sq, sq); }
+      }
+    };
+    if (reduce) return paint(cells.length);
+    let shown = 0;
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return; o.disconnect();
+      const t0 = performance.now();
+      const tick = now => { const n = Math.min(cells.length, Math.round((now - t0) / 1100 * cells.length));
+        x.clearRect(0, 0, W, H); paint(n); shown = n; if (n < cells.length) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    }, { threshold: .3 }).observe(cv);
+  };
+
+  // what the work is made of: interviews, identity, website, software, experience.
+  // The sheets part so each can be read, then close into one object, the experience in front.
+  let madeGen = 0;
+  const sig = new Image(); sig.src = 'assets/signature.png';
+  const made = () => {
+    const my = ++madeGen; const cv = document.getElementById('made'); const [x, W, H] = setup(cv);
+    const visH = Math.max(H * .5, Math.min(H, letter.getBoundingClientRect().top - cv.getBoundingClientRect().top));
+    const u = Math.min(W / 54, visH / 21);
+    const cw = 10 * u, chh = 11 * u, sx = Math.cos(Math.PI / 6), sy = .5;
+    const ink = a => `rgba(40,33,42,${a})`;
+    const names = ['Interviews', 'Identity', 'Website', 'Software', 'Experience'];
+    const bar = (bx, by, bw, bh, c) => { x.fillStyle = c; x.fillRect(bx, by, bw, bh); };
+    const pill = (bx, by, bw, bh, c) => { x.fillStyle = c; x.beginPath(); x.roundRect(bx, by, bw, bh, bh / 2); x.fill(); };
+    const disc = (cx, cy, r, c) => { x.fillStyle = c; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); };
+
+    const faces = [
+      () => { // interviews: a transcript, one line of it marked
+        const p = u * .9;
+        [[.3, 1], [.9], [.78], [.94], [.5], [.3, 1], [.86], [.92], [.66], [.3, 1], [.8], [.58]].forEach(([w, who], k) => {
+          const ly = p + k * u * .78;
+          bar(p + (who ? 0 : u * .9), ly, (cw - 2 * p - (who ? 0 : u * .9)) * w, u * (who ? .24 : .18), ink(who ? .6 : .3));
+        });
+        bar(p + u * .9 - u * .1, p + 7 * u * .78 - u * .2, (cw - 2 * p - u * .9) * .62, u * .58, 'rgba(244,210,75,.75)');
+        bar(p + u * .9, p + 7 * u * .78, (cw - 2 * p - u * .9) * .92, u * .18, ink(.45));
+      },
+      () => { // identity: the mark, its colours, one light
+        const g = x.createRadialGradient(cw * .72, chh * .2, 0, cw * .72, chh * .2, cw * .5);
+        g.addColorStop(0, 'rgba(244,210,75,.55)'); g.addColorStop(1, 'rgba(244,210,75,0)');
+        x.fillStyle = g; x.fillRect(0, 0, cw, chh);
+        if (sig.complete && sig.naturalWidth) { const w = cw * .74, h = w * sig.naturalHeight / sig.naturalWidth; x.drawImage(sig, (cw - w) / 2, chh * .42 - h / 2, w, h); }
+        ['#F26A3D', '#C49BF5', '#1E3F73', '#F4D24B', '#CFDCFA'].forEach((c, k) => bar(u * .9 + k * u * 1.6, chh - u * 2.2, u * 1.2, u * 1.2, c));
+      },
+      () => { // website: a photograph across the top, a card floating on it
+        const g = x.createLinearGradient(0, 0, 0, u * 6.4);
+        g.addColorStop(0, '#CFDCFA'); g.addColorStop(.55, '#F39AD6'); g.addColorStop(.56, '#9E5B5B'); g.addColorStop(1, '#1E3F73');
+        x.fillStyle = g; x.fillRect(0, 0, cw, u * 6.4);
+        pill(u * .6, u * .5, cw - u * 1.2, u * .7, 'rgba(247,243,234,.92)');
+        bar(u * 1, u * .75, u * 1.4, u * .2, ink(.6));
+        bar(u * .7, u * 4.2, cw * .55, u * 3.2, '#F7F3EA');
+        bar(u * 1.1, u * 4.7, cw * .38, u * .32, ink(.7)); bar(u * 1.1, u * 5.3, cw * .3, u * .16, ink(.35));
+        pill(u * 1.1, u * 6.2, u * 1.9, u * .62, '#F26A3D');
+        [0, 1].forEach(k => { bar(cw * .62, u * (8 + k * 1.1), cw * .3, u * .16, ink(.3)); });
+        bar(u * .7, u * 8, cw * .44, u * .16, ink(.3)); bar(u * .7, u * 8.6, cw * .36, u * .16, ink(.3));
+      },
+      t => { // software: an event, the decision it meets, the action that follows
+        bar(0, 0, u * 2.2, chh, ink(.07));
+        [0, 1, 2, 3].forEach(k => bar(u * .5, u * (1 + k * .9), u * 1.2, u * .2, ink(k === 1 ? .6 : .28)));
+        const nx = u * 3, nw = cw - u * 3.8, nh = u * 1.5, ys = [u * 1, u * 4.1, u * 7.2];
+        const live = (t / 1400 | 0) % 3;
+        ys.forEach((ny, k) => {
+          x.fillStyle = '#FFFFFF'; x.beginPath(); x.roundRect(nx, ny, nw, nh, u * .3); x.fill();
+          x.strokeStyle = k === live ? 'rgba(30,63,115,.8)' : ink(.25); x.lineWidth = k === live ? 1.5 : 1; x.stroke();
+          pill(nx + u * .35, ny + u * .42, u * 1.6, u * .62, ['#CFDCFA', '#E8D8F8', '#F4D24B'][k]);
+          bar(nx + u * 2.3, ny + u * .65, nw * .38, u * .18, ink(.4));
+          if (k < 2) { bar(nx + nw / 2 - .5, ny + nh, 1, ys[k + 1] - ny - nh, ink(.35)); disc(nx + nw / 2, ys[k + 1] - u * .2, u * .14, ink(.45)); }
+        });
+        disc(nx + nw - u * .55, ys[2] + nh / 2, u * .32, '#D9443A'); bar(nx + nw - u * .72, ys[2] + nh / 2 - .75, u * .34, 1.5, '#FFFFFF');
+      },
+      t => { // experience: the booth, a voice asking, the room answering
+        bar(0, 0, cw, chh, '#1E3F73');
+        const g = x.createRadialGradient(cw / 2, chh * .38, 0, cw / 2, chh * .38, cw * .46);
+        g.addColorStop(0, 'rgba(246,138,99,.55)'); g.addColorStop(1, 'rgba(246,138,99,0)');
+        x.fillStyle = g; x.fillRect(0, 0, cw, chh);
+        disc(cw / 2, chh * .38, u * 1.5, 'rgba(247,243,234,.92)');
+        const n = 22, bw = (cw - u * 2) / n;
+        for (let k = 0; k < n; k++) {
+          const h = u * (.25 + 1.5 * Math.abs(Math.sin(t / 380 + k * .7) * Math.sin(t / 900 + k * .23)));
+          bar(u + k * bw + bw * .25, chh * .72 - h / 2, bw * .5, h, 'rgba(247,243,234,.75)');
+        }
+        disc(u * 1, u * 1, u * .22, (t / 700 | 0) % 2 ? '#F26A3D' : 'rgba(242,106,61,.35)');
+        bar(u * 1.5, u * .92, u * 2, u * .16, 'rgba(247,243,234,.5)');
+      }
+    ];
+
+    let p = 0, hover = false, visible = true; const t0 = performance.now();
+    cv.parentElement.addEventListener('pointerenter', () => { hover = true; });
+    cv.parentElement.addEventListener('pointerleave', () => { hover = false; });
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(cv);
+    const ease = v => v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+    const auto = t => { // together 2.6s, part 3.2s, apart 4.2s, close 3.2s
+      const c = (t / 1000) % 13.2;
+      return c < 2.6 ? 0 : c < 5.8 ? ease((c - 2.6) / 3.2) : c < 10 ? 1 : 1 - ease((c - 10) / 3.2);
+    };
+
+    const draw = t => {
+      x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height);
+      const dpr = cv.width / W; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const gap = .8 * u + (7.4 * u) * p, span = 4 * gap + cw * sx;
+      const ox = W / 2 - span / 2, oy = visH / 2 - (chh + cw * sy) / 2 + u * .6;
+      const pos = [0, 1, 2, 3, 4].map(i => [ox + i * gap, oy + (i - 2) * gap * .05]);
+      const mid = ([px, py]) => [px + cw * sx / 2, py + cw * sy / 2 + chh / 2];
+
+      // the line that runs through all of it
+      const a = mid(pos[0]), b = mid(pos[4]), ext = 3.2 * u, dx = b[0] - a[0] || 1, k = (b[1] - a[1]) / dx;
+      x.strokeStyle = ink(.45); x.lineWidth = 1; x.setLineDash([3, 4]);
+      x.beginPath(); x.moveTo(a[0] - ext, a[1] - ext * k); x.lineTo(b[0] + ext, b[1] + ext * k); x.stroke(); x.setLineDash([]);
+      x.fillStyle = ink(.6); x.beginPath(); x.arc(b[0] + ext, b[1] + ext * k, 3, 0, 7); x.fill();
+
+      pos.forEach(([px, py], i) => {
+        x.save(); x.transform(sx, sy, 0, 1, px, py);
+        x.fillStyle = 'rgba(110,35,10,.13)'; x.fillRect(u * .5, u * .6, cw, chh);
+        x.fillStyle = '#F7F3EA'; x.fillRect(0, 0, cw, chh);
+        x.save(); x.beginPath(); x.rect(0, 0, cw, chh); x.clip(); faces[i](t); x.restore();
+        x.strokeStyle = ink(.5); x.lineWidth = 1; x.strokeRect(.5, .5, cw - 1, chh - 1);
+        x.restore();
+        const la = Math.max(0, (p - .55) / .45);
+        if (la > 0) {
+          x.fillStyle = ink(.78 * la); x.font = `${Math.max(9, u * .78)}px "Courier Prime", monospace`; x.textBaseline = 'alphabetic';
+          x.fillText(names[i], px, py - u * .7);
+        }
+      });
+    };
+
+    if (reduce) { p = 1; return draw(0); }
+    let last = 0;
+    const loop = now => {
+      if (my !== madeGen) return;
+      if (visible && now - last > 30) {
+        const t = now - t0, target = hover ? 1 : auto(t);
+        p += (target - p) * (hover ? .06 : 1); draw(t); last = now;
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  };
+
+  // wires: square-cornered runs across the open ground into the letter
+  const wires = document.getElementById('wires');
+  const route = () => {
+    if (getComputedStyle(wires).display === 'none') return;
+    const m = board.getBoundingClientRect(), L = letter.getBoundingClientRect();
+    const lb = L.bottom - m.top, vw = innerWidth / 100;
+    let out = '';
+    document.querySelectorAll('[data-wire]').forEach((p, i) => {
+      const r = p.getBoundingClientRect();
+      const sx = r.left - m.left, sy = r.top - m.top + r.height * (i ? .62 : .78);
+      const ex = L.left - m.left + L.width * (i ? .34 : .7), ey = lb;
+      const run = Math.max(sy, lb + (3 + i * 3) * vw);
+      out += `<path d="M${sx} ${sy}H${sx - (2 + i * 3) * vw}V${run}H${ex}V${ey}"/><circle class="end" cx="${sx}" cy="${sy}" r="4"/><rect class="end" x="${ex - 4}" y="${ey - 8}" width="8" height="8"/>`;
     });
-    document.addEventListener('pointerleave', () => { tilt.style.transform = ''; });
-  }
+    wires.innerHTML = out;
+  };
+
+  const all = () => { fit(); route(); };
+  all();
+  const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
+  fonts.then(() => { all(); ascii(); pix(); made(); });
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { all(); ascii(); pix(); made(); }, 200); });
 })();
 </script>
 </body>
